@@ -22,11 +22,45 @@ RAW_DATA_DIR = Path("data/raw")
 RAW_DATA_PATH = RAW_DATA_DIR / "credit_default.csv"
 DATASET_ID = 350
 
+# Official UCI variable name -> descriptive name mapping for this dataset
+COLUMN_RENAME_MAP = {
+    "X1": "LIMIT_BAL",
+    "X2": "SEX",
+    "X3": "EDUCATION",
+    "X4": "MARRIAGE",
+    "X5": "AGE",
+    "X6": "PAY_0",
+    "X7": "PAY_2",
+    "X8": "PAY_3",
+    "X9": "PAY_4",
+    "X10": "PAY_5",
+    "X11": "PAY_6",
+    "X12": "BILL_AMT1",
+    "X13": "BILL_AMT2",
+    "X14": "BILL_AMT3",
+    "X15": "BILL_AMT4",
+    "X16": "BILL_AMT5",
+    "X17": "BILL_AMT6",
+    "X18": "PAY_AMT1",
+    "X19": "PAY_AMT2",
+    "X20": "PAY_AMT3",
+    "X21": "PAY_AMT4",
+    "X22": "PAY_AMT5",
+    "X23": "PAY_AMT6",
+}
+
+
+def rename_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Rename generic UCI X1..X23 columns to descriptive names."""
+    df = df.rename(columns=COLUMN_RENAME_MAP)
+    logger.info("Renamed columns to descriptive names: %s", list(df.columns))
+    return df
+
 
 def fetch_dataset(dataset_id: int = DATASET_ID) -> pd.DataFrame:
     """
     Fetch the UCI dataset by ID, combine features and target
-    into a single DataFrame, and rename the target column to 'default'.
+    into a single DataFrame, and rename columns to descriptive names.
     """
     try:
         logger.info("Fetching dataset with ID %s from UCI repository...", dataset_id)
@@ -43,6 +77,9 @@ def fetch_dataset(dataset_id: int = DATASET_ID) -> pd.DataFrame:
         # (the target) and rename it explicitly to 'default'.
         target_col = y.columns[0]
         df = df.rename(columns={target_col: "default"})
+
+        # Rename generic X1..X23 feature columns to descriptive names.
+        df = rename_columns(df)
 
         logger.info("Combined DataFrame shape: %s", df.shape)
         return df
