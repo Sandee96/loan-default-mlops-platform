@@ -1,1 +1,2 @@
-"""Tests for test_features - to be implemented."""
+def test_example():
+    assert 1 + 1 == 2
