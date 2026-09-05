@@ -56,6 +56,8 @@ def add_bill_and_payment_amount_features(df: pd.DataFrame) -> pd.DataFrame:
     df["AVG_BILL_AMT"] = df[BILL_AMT_COLS].mean(axis=1)
     df["AVG_PAY_AMT"] = df[PAY_AMT_COLS].mean(axis=1)
 
+    # Ratio of what they actually paid vs. what they were billed, on average.
+    # Guard against division by zero / negative-or-zero bills.
     denom = df["AVG_BILL_AMT"].abs() + EPSILON
     df["PAYMENT_TO_BILL_RATIO"] = df["AVG_PAY_AMT"] / denom
 
@@ -87,12 +89,14 @@ def add_payment_trend(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     _check_required_columns(df, PAY_AMT_COLS)
 
+    # PAY_AMT_COLS is ordered most-recent-first; reverse to oldest-first
+    # so the slope has a clear "time moving forward" meaning.
     ordered_cols = list(reversed(PAY_AMT_COLS))
     x = np.arange(len(ordered_cols))
 
     def _slope(row: pd.Series) -> float:
         y = row[ordered_cols].to_numpy(dtype=float)
-        if np.all(y == y[0]):
+        if np.all(y == y[0]):  # no variation -> undefined trend, treat as 0
             return 0.0
         slope = np.polyfit(x, y, 1)[0]
         return float(slope)
@@ -134,6 +138,7 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
+    # Quick manual smoke test using processed training data, if present.
     from pathlib import Path
 
     x_train_path = Path("data/processed/X_train.csv")
