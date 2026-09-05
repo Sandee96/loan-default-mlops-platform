@@ -1,0 +1,12 @@
+pandas
+numpy
+scikit-learn
+ucimlrepo
+mlflow
+fastapi
+uvicorn
+pydantic
+evidently
+streamlit
+pytest
+httpx
