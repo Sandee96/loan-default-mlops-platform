@@ -2,10 +2,8 @@
 train.py
 
 Trains candidate models on the processed + feature-engineered data,
-evaluates them, and saves the best-performing model and its metrics.
-
-No MLflow here yet - that's added in feature/mlflow-pipeline without
-breaking this working baseline.
+evaluates them, logs everything to MLflow, and saves the
+best-performing model and its metrics locally.
 """
 
 import json
@@ -13,6 +11,8 @@ import logging
 from pathlib import Path
 
 import joblib
+import mlflow
+import mlflow.sklearn
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -40,6 +40,24 @@ BEST_MODEL_PATH = MODELS_DIR / "best_model.pkl"
 METRICS_PATH = MODELS_DIR / "metrics.json"
 
 RANDOM_STATE = 42
+EXPERIMENT_NAME = "Loan_Default_Risk_Prediction"
+
+# Hyperparameters defined explicitly here (not buried in Pipeline calls)
+# so they can be logged to MLflow cleanly.
+MODEL_HYPERPARAMS = {
+    "logistic_regression": {
+        "max_iter": 1000,
+        "class_weight": "balanced",
+        "random_state": RANDOM_STATE,
+    },
+    "random_forest": {
+        "n_estimators": 100,
+        "max_depth": 12,
+        "class_weight": "balanced",
+        "random_state": RANDOM_STATE,
+        "n_jobs": -1,
+    },
+}
 
 
 def load_processed_data():
@@ -59,28 +77,15 @@ def load_processed_data():
 
 
 def build_candidate_models() -> dict:
-    """
-    Define candidate models as sklearn Pipelines (scaler + classifier)
-    so scaling is always fit on training data only.
-    """
+    """Define candidate models as sklearn Pipelines (scaler + classifier)."""
     candidates = {
         "logistic_regression": Pipeline([
             ("scaler", StandardScaler()),
-            ("clf", LogisticRegression(
-                max_iter=1000,
-                class_weight="balanced",
-                random_state=RANDOM_STATE,
-            )),
+            ("clf", LogisticRegression(**MODEL_HYPERPARAMS["logistic_regression"])),
         ]),
         "random_forest": Pipeline([
             ("scaler", StandardScaler()),
-            ("clf", RandomForestClassifier(
-                n_estimators=100,
-                max_depth=12,
-                class_weight="balanced",
-                random_state=RANDOM_STATE,
-                n_jobs=-1,
-            )),
+            ("clf", RandomForestClassifier(**MODEL_HYPERPARAMS["random_forest"])),
         ]),
     }
     return candidates
@@ -102,15 +107,37 @@ def evaluate_model(model, X_test, y_test) -> dict:
 
 
 def train_and_evaluate_all(X_train, X_test, y_train, y_test) -> dict:
-    """Train every candidate model and collect fitted models + metrics."""
+    """
+    Train every candidate model, log each run to MLflow, and
+    collect fitted models + metrics for local comparison.
+    """
     candidates = build_candidate_models()
     results = {}
 
+    mlflow.set_experiment(EXPERIMENT_NAME)
+
     for name, pipeline in candidates.items():
         logger.info("Training model: %s", name)
-        pipeline.fit(X_train, y_train)
-        metrics = evaluate_model(pipeline, X_test, y_test)
-        logger.info("Metrics for %s: %s", name, metrics)
+
+        with mlflow.start_run(run_name=name):
+            mlflow.set_tags({
+                "project": "loan-default-mlops",
+                "dataset": "UCI Default of Credit Card Clients",
+            })
+            mlflow.log_param("model_name", name)
+            for param_name, param_value in MODEL_HYPERPARAMS[name].items():
+                mlflow.log_param(param_name, param_value)
+
+            pipeline.fit(X_train, y_train)
+            metrics = evaluate_model(pipeline, X_test, y_test)
+
+            for metric_name, metric_value in metrics.items():
+                mlflow.log_metric(metric_name, metric_value)
+
+            mlflow.sklearn.log_model(pipeline, name="model")
+
+            logger.info("Metrics for %s: %s", name, metrics)
+
         results[name] = {"model": pipeline, "metrics": metrics}
 
     return results
