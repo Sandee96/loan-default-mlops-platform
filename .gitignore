@@ -15,6 +15,7 @@ data/monitoring/*
 !data/monitoring/.gitkeep
 models/*.pkl
 mlruns/
+mlflow.db
 mlartifacts/
 
 # Reports (generated)
