@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-09-08T05:21:04.226779+00:00",
+  "drift_detected": true,
+  "retraining_triggered": true,
+  "promoted": true,
+  "reason": "candidate_met_or_exceeded_current_roc_auc",
+  "current_roc_auc": 0.7734679423350821,
+  "candidate_roc_auc": 0.7734679423350821,
+  "candidate_model_name": "random_forest",
+  "drift_details": {
+    "dataset_drift_detected": true,
+    "drifted_features_count": 22,
+    "total_features": 23,
+    "drift_share": 0.9565
+  }
+}

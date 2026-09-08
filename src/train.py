@@ -106,7 +106,7 @@ def evaluate_model(model, X_test, y_test) -> dict:
     return metrics
 
 
-def train_and_evaluate_all(X_train, X_test, y_train, y_test) -> dict:
+def train_and_evaluate_all(X_train, X_test, y_train, y_test, extra_tags: dict = None) -> dict:
     """
     Train every candidate model, log each run to MLflow, and
     collect fitted models + metrics for local comparison.
@@ -120,10 +120,15 @@ def train_and_evaluate_all(X_train, X_test, y_train, y_test) -> dict:
         logger.info("Training model: %s", name)
 
         with mlflow.start_run(run_name=name):
-            mlflow.set_tags({
+
+            tags = {
                 "project": "loan-default-mlops",
                 "dataset": "UCI Default of Credit Card Clients",
-            })
+            }
+            if extra_tags:
+                tags.update(extra_tags)
+            mlflow.set_tags(tags)
+
             mlflow.log_param("model_name", name)
             for param_name, param_value in MODEL_HYPERPARAMS[name].items():
                 mlflow.log_param(param_name, param_value)
