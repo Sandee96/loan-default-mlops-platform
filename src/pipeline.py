@@ -3,10 +3,11 @@ pipeline.py
 
 Orchestrates the full training pipeline end-to-end:
 data loading -> preprocessing -> feature engineering -> training ->
-evaluation -> MLflow logging -> best model saving -> metadata.
+evaluation -> MLflow logging -> best model saving -> metadata ->
+drift reference snapshot.
 
-Reuses existing functions from data_loader, preprocess, train, and
-evaluate - no duplicated logic here.
+Reuses existing functions from data_loader, preprocess, train,
+evaluate, and monitoring - no duplicated logic here.
 """
 
 import json
@@ -24,6 +25,7 @@ from src.train import (
     train_and_evaluate_all,
 )
 from src.evaluate import run_full_evaluation
+from src.monitoring import save_reference_data
 
 logging.basicConfig(
     level=logging.INFO,
@@ -68,26 +70,29 @@ def save_model_metadata(best_name: str, best_metrics: dict, feature_names: list,
 
 def run_pipeline() -> None:
     """Run the complete end-to-end pipeline."""
-    logger.info("=== STEP 1/6: Data loading ===")
+    logger.info("=== STEP 1/7: Data loading ===")
     load_data_step()
 
-    logger.info("=== STEP 2/6: Preprocessing ===")
+    logger.info("=== STEP 2/7: Preprocessing ===")
     run_preprocessing()
 
-    logger.info("=== STEP 3/6: Loading processed data + feature engineering ===")
+    logger.info("=== STEP 3/7: Loading processed data + feature engineering ===")
     X_train, X_test, y_train, y_test = load_processed_data()
 
-    logger.info("=== STEP 4/6: Training + MLflow logging ===")
+    logger.info("=== STEP 4/7: Training + MLflow logging ===")
     results = train_and_evaluate_all(X_train, X_test, y_train, y_test)
     best_name, best_model, best_metrics = select_best_model(results)
 
-    logger.info("=== STEP 5/6: Evaluation (plots) ===")
+    logger.info("=== STEP 5/7: Evaluation (plots) ===")
     run_full_evaluation(best_model, X_test, y_test)
 
-    logger.info("=== STEP 6/6: Saving best model + metadata ===")
+    logger.info("=== STEP 6/7: Saving best model + metadata ===")
     save_best_model(best_model)
     save_metrics(results, best_name)
     save_model_metadata(best_name, best_metrics, list(X_train.columns))
+
+    logger.info("=== STEP 7/7: Saving drift reference dataset ===")
+    save_reference_data()
 
     logger.info(
         "\n=== PIPELINE SUMMARY ===\n"
