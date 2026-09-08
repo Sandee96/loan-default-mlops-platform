@@ -1,7 +1,7 @@
 {
   "model_name": "random_forest",
-  "version": 1,
-  "training_date": "2026-09-07T17:21:36.275853+00:00",
+  "version": 2,
+  "training_date": "2026-09-08T02:21:55.153471+00:00",
   "roc_auc": 0.7734679423350821,
   "dataset": "UCI Default of Credit Card Clients",
   "features": [

@@ -15,6 +15,8 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+from src.monitoring import log_prediction
+
 import joblib
 import pandas as pd
 from fastapi import FastAPI, HTTPException
@@ -115,10 +117,19 @@ def predict(request: PredictionRequest):
         probability = float(model.predict_proba(engineered_df)[0][1])
         risk_level = classify_risk(probability)
 
+        log_prediction(
+            raw_input=request.model_dump(),
+            prediction=prediction,
+            probability=round(probability, 4),
+            risk_level=risk_level,
+            model_version=state["model_version"],
+        )
+
         logger.info(
             "Prediction made: prediction=%d, probability=%.4f, risk_level=%s",
             prediction, probability, risk_level,
         )
+        
 
         return PredictionResponse(
             prediction=prediction,
