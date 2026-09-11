@@ -107,57 +107,71 @@ with tab_overview:
 # Live Prediction
 # ---------------------------------------------------------------------------
 with tab_predict:
-    st.header("Make a Live Prediction")
+    st.header("🔮 Make a Live Prediction")
     model, model_metadata = load_model_and_metadata()
 
     if model is None:
         st.warning("No trained model found yet. Run `python -m src.pipeline` first.")
     else:
-        st.caption("Fills in a typical example - edit any field and submit to see a real prediction from the current model.")
+        st.caption("Fill in an applicant's details below to get a real-time default risk prediction from the current model.")
+
+        with st.expander("ℹ️ What do the payment history fields mean?"):
+            st.markdown(
+                "- **Repayment Status** (PAY_0 → PAY_6): how the applicant paid each of the last 6 months, "
+                "most recent first. `-1` = paid in full, `0` = paid the minimum on time, `1` = payment delayed "
+                "1 month, `2` = delayed 2 months, and so on.\n"
+                "- **Bill Amount** (BILL_AMT1 → BILL_AMT6): how much the credit card bill was that month, "
+                "before any payment.\n"
+                "- **Payment Amount** (PAY_AMT1 → PAY_AMT6): how much the applicant actually paid that month."
+            )
 
         with st.form("live_prediction_form"):
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                limit_bal = st.number_input("Credit Limit (LIMIT_BAL)", min_value=1.0, value=200000.0)
-                sex = st.selectbox("Sex", options=[1, 2], format_func=lambda x: "Male" if x == 1 else "Female")
-                education = st.selectbox(
-                    "Education", options=[1, 2, 3, 4],
-                    format_func=lambda x: {1: "Grad school", 2: "University", 3: "High school", 4: "Others"}[x],
-                )
-                marriage = st.selectbox(
-                    "Marriage", options=[1, 2, 3],
-                    format_func=lambda x: {1: "Married", 2: "Single", 3: "Others"}[x],
-                )
-                age = st.number_input("Age", min_value=18, max_value=100, value=35)
+            st.subheader("👤 Applicant Details")
+            c1, c2, c3, c4, c5 = st.columns(5)
+            limit_bal = c1.number_input("Credit Limit", min_value=1.0, value=200000.0, help="Total credit limit given to the applicant, in NT dollars.")
+            sex = c2.selectbox("Sex", options=[1, 2], format_func=lambda x: "Male" if x == 1 else "Female")
+            education = c3.selectbox(
+                "Education", options=[1, 2, 3, 4],
+                format_func=lambda x: {1: "Grad school", 2: "University", 3: "High school", 4: "Others"}[x],
+            )
+            marriage = c4.selectbox(
+                "Marital Status", options=[1, 2, 3],
+                format_func=lambda x: {1: "Married", 2: "Single", 3: "Others"}[x],
+            )
+            age = c5.number_input("Age", min_value=18, max_value=100, value=35)
 
-            with c2:
-                st.caption("Repayment status, most recent -> 6 months ago (-1=paid duly, 1+=months delayed)")
-                pay_0 = st.number_input("PAY_0", value=0, step=1)
-                pay_2 = st.number_input("PAY_2", value=0, step=1)
-                pay_3 = st.number_input("PAY_3", value=0, step=1)
-                pay_4 = st.number_input("PAY_4", value=0, step=1)
-                pay_5 = st.number_input("PAY_5", value=0, step=1)
-                pay_6 = st.number_input("PAY_6", value=0, step=1)
-
-            with c3:
-                st.caption("Bill amounts, most recent -> 6 months ago")
-                bill_amt1 = st.number_input("BILL_AMT1", value=50000.0)
-                bill_amt2 = st.number_input("BILL_AMT2", value=48000.0)
-                bill_amt3 = st.number_input("BILL_AMT3", value=46000.0)
-                bill_amt4 = st.number_input("BILL_AMT4", value=44000.0)
-                bill_amt5 = st.number_input("BILL_AMT5", value=42000.0)
-                bill_amt6 = st.number_input("BILL_AMT6", value=40000.0)
-
-            st.caption("Payment amounts, most recent -> 6 months ago")
+            st.divider()
+            st.subheader("💳 Repayment Status (most recent → 6 months ago)")
+            st.caption("-1 = paid in full · 0 = paid minimum on time · 1+ = months payment was delayed")
             p1, p2, p3, p4, p5, p6 = st.columns(6)
-            pay_amt1 = p1.number_input("PAY_AMT1", min_value=0.0, value=2000.0)
-            pay_amt2 = p2.number_input("PAY_AMT2", min_value=0.0, value=2000.0)
-            pay_amt3 = p3.number_input("PAY_AMT3", min_value=0.0, value=2000.0)
-            pay_amt4 = p4.number_input("PAY_AMT4", min_value=0.0, value=2000.0)
-            pay_amt5 = p5.number_input("PAY_AMT5", min_value=0.0, value=2000.0)
-            pay_amt6 = p6.number_input("PAY_AMT6", min_value=0.0, value=2000.0)
+            pay_0 = p1.number_input("This month", value=0, step=1, key="pay_0")
+            pay_2 = p2.number_input("2 months ago", value=0, step=1, key="pay_2")
+            pay_3 = p3.number_input("3 months ago", value=0, step=1, key="pay_3")
+            pay_4 = p4.number_input("4 months ago", value=0, step=1, key="pay_4")
+            pay_5 = p5.number_input("5 months ago", value=0, step=1, key="pay_5")
+            pay_6 = p6.number_input("6 months ago", value=0, step=1, key="pay_6")
 
-            submitted = st.form_submit_button("Predict")
+            st.divider()
+            st.subheader("🧾 Bill Amount (what was owed each month)")
+            b1, b2, b3, b4, b5, b6 = st.columns(6)
+            bill_amt1 = b1.number_input("This month", value=50000.0, key="bill1")
+            bill_amt2 = b2.number_input("2 months ago", value=48000.0, key="bill2")
+            bill_amt3 = b3.number_input("3 months ago", value=46000.0, key="bill3")
+            bill_amt4 = b4.number_input("4 months ago", value=44000.0, key="bill4")
+            bill_amt5 = b5.number_input("5 months ago", value=42000.0, key="bill5")
+            bill_amt6 = b6.number_input("6 months ago", value=40000.0, key="bill6")
+
+            st.divider()
+            st.subheader("💰 Payment Amount (what was actually paid each month)")
+            a1, a2, a3, a4, a5, a6 = st.columns(6)
+            pay_amt1 = a1.number_input("This month", min_value=0.0, value=2000.0, key="amt1")
+            pay_amt2 = a2.number_input("2 months ago", min_value=0.0, value=2000.0, key="amt2")
+            pay_amt3 = a3.number_input("3 months ago", min_value=0.0, value=2000.0, key="amt3")
+            pay_amt4 = a4.number_input("4 months ago", min_value=0.0, value=2000.0, key="amt4")
+            pay_amt5 = a5.number_input("5 months ago", min_value=0.0, value=2000.0, key="amt5")
+            pay_amt6 = a6.number_input("6 months ago", min_value=0.0, value=2000.0, key="amt6")
+
+            submitted = st.form_submit_button("🔮 Predict Default Risk", use_container_width=True)
 
         if submitted:
             raw_input = {
@@ -176,9 +190,13 @@ with tab_predict:
             probability = float(model.predict_proba(engineered_df)[0][1])
             risk_level = classify_risk(probability)
 
+            st.divider()
             st.subheader("Result")
             r1, r2, r3 = st.columns(3)
-            r1.metric("Prediction", "Default" if prediction == 1 else "No Default")
+            if prediction == 1:
+                r1.error(f"**Prediction:** Default")
+            else:
+                r1.success(f"**Prediction:** No Default")
             r2.metric("Default Probability", f"{probability:.4f}")
             r3.metric("Risk Level", risk_level)
 
