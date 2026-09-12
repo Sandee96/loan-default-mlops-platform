@@ -21,6 +21,7 @@ import joblib
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 
+from fastapi.responses import HTMLResponse
 from api.schemas import PredictionRequest, PredictionResponse
 from src.features import engineer_features
 
@@ -89,6 +90,78 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+@app.get("/", response_class=HTMLResponse)
+def home():
+    """A simple branded landing page instead of a bare 404 at the root URL."""
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <head>
+    <meta charset="UTF-8">
+    <title>Loan Default Risk Prediction Platform</title>
+        <title>Loan Default Risk Prediction Platform</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            body {
+                font-family: 'Segoe UI', Arial, sans-serif;
+                background: #0f172a;
+                color: #f1f5f9;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                margin: 0;
+            }
+            .card {
+                background: #1e293b;
+                padding: 48px;
+                border-radius: 16px;
+                max-width: 560px;
+                text-align: center;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            }
+            h1 { font-size: 28px; margin-bottom: 8px; }
+            p { color: #94a3b8; line-height: 1.5; }
+            .badge {
+                display: inline-block;
+                background: #22c55e;
+                color: #052e16;
+                padding: 4px 12px;
+                border-radius: 999px;
+                font-size: 13px;
+                font-weight: 600;
+                margin-bottom: 16px;
+            }
+            .buttons { margin-top: 28px; }
+            a.button {
+                display: inline-block;
+                padding: 12px 24px;
+                margin: 6px;
+                border-radius: 8px;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 14px;
+            }
+            a.primary { background: #3b82f6; color: white; }
+            a.secondary { background: #334155; color: #e2e8f0; }
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <div class="badge">&#128994; API Online</div>
+            <h1>&#127974; Loan Default Risk Prediction Platform</h1>
+            <p>Real-time credit default risk prediction service, powered by MLflow experiment tracking,
+            Evidently drift monitoring, and automated retraining.</p>
+            <div class="buttons">
+                <a class="button primary" href="/docs">Try the API &#8594;</a>
+                <a class="button secondary" href="/health">Health Check</a>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
 
 
 @app.get("/health")
