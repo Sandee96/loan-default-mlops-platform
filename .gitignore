@@ -30,3 +30,6 @@ ngrok.exe
 
 # Env
 .env
+
+# Local tools
+ngrok.exe
