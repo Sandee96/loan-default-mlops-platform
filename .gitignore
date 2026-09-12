@@ -26,6 +26,7 @@ reports/drift/*
 .vscode/
 .idea/
 .DS_Store
+ngrok.exe
 
 # Env
 .env
