@@ -29,3 +29,6 @@ reports/drift/*
 
 # Env
 .env
+
+# Local tools
+ngrok.exe
