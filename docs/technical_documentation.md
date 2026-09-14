@@ -284,15 +284,25 @@ feature/fix branch, and CI must pass before merging.
 
 ## Deployment
 
-**Note on deployment approach:** initial attempts were made to deploy to Render and other free-tier
-cloud platforms; each ultimately required credit card verification for account/service creation, even
-on their advertised free tiers. Given the project timeline, the application is instead deployed using
-an ngrok tunnel, which exposes the locally-running Docker container to a public HTTPS URL without any
-payment information. This is documented here transparently as the deployment mechanism actually used,
-rather than presented as a persistent cloud deployment it is not. The container itself, its
-Dockerfile, and its port-binding logic are written to be cloud-deployment-ready (respecting the `PORT`
-environment variable, for example) should a card-free or approved-payment cloud platform become
-available.
+Multiple cloud platforms were evaluated for deployment during this project: Render, Koyeb, Railway,
+and Google Cloud Run.
+
+- **Render** — required credit card verification; the verification form repeatedly failed to
+  complete successfully.
+- **Koyeb** — also required credit card verification to activate a free-tier web service.
+- **Railway** — offers a no-card-required trial with a one-time credit grant; however, this credit
+  had already been consumed by prior unrelated personal use of the platform before this project began,
+  so it was not usable here.
+- **Google Cloud Run** — requires a linked billing account with a valid credit card at account
+  creation, even for its Always Free tier; card verification did not complete successfully.
+
+No cloud platform was ultimately usable for a persistent deployment within this project's timeframe.
+The application is instead deployed using an ngrok tunnel, which exposes the locally-running Docker
+container to a public HTTPS URL without requiring payment information. This is documented
+transparently as the deployment mechanism actually used, rather than presented as a persistent cloud
+deployment it is not. The application's Dockerfile and port configuration (reading the `PORT`
+environment variable dynamically) are written to be standard-cloud-deployment-ready, should a usable
+platform become available.
 
 ## Known Limitations
 
