@@ -63,7 +63,7 @@ current one.
 |---|---|
 | Language | Python 3.13 |
 | Dataset | UCI Default of Credit Card Clients |
-| ML | scikit-learn (Logistic Regression, Random Forest) |
+| ML | scikit-learn (Logistic Regression, Random Forest, Gradient Boosting) |
 | Experiment Tracking | MLflow |
 | API | FastAPI + Uvicorn |
 | Drift Monitoring | Evidently |
