@@ -99,6 +99,35 @@ GitHub --> GitHub Actions (CI) --> Tests --> Docker Build --> Deployment
 
 A visual version of this diagram is provided in `docs/architecture.png`.
 
+## Screenshots
+
+**API Landing Page**
+![Landing Page](screenshots/landing_page.png)
+
+**Real-Time Prediction (Swagger)**
+![Predict Endpoint](screenshots/predict_swagger.png)
+
+**Monitoring Dashboard — Overview**
+![Dashboard Overview](screenshots/dashboard_overview.png)
+
+**Monitoring Dashboard — Live Prediction**
+![Live Prediction Tab](screenshots/dashboard_live_prediction.png)
+
+**Monitoring Dashboard — Drift Monitoring**
+![Drift Monitoring Tab](screenshots/dashboard_drift.png)
+
+**Monitoring Dashboard — Model Performance**
+![Model Performance Tab](screenshots/dashboard_performance.png)
+
+**Monitoring Dashboard — Retraining History**
+![Retraining History Tab](screenshots/dashboard_retraining_history.png)
+
+**MLflow Experiment Tracking**
+![MLflow Runs](screenshots/mlflow_runs.png)
+
+**Evidently Drift Report**
+![Drift Report](screenshots/drift_report.png)
+
 ## Folder Structure
 
 loan-default-mlops-platform/
