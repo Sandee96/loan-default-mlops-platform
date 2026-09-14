@@ -77,8 +77,8 @@ st.caption("Real-time MLOps monitoring dashboard - project overview, model healt
 metadata = load_json(METADATA_PATH)
 metrics = load_json(METRICS_PATH)
 
-tab_overview, tab_predict, tab_monitoring, tab_performance, tab_drift = st.tabs(
-    ["Overview", "Live Prediction", "Prediction Monitoring", "Model Performance", "Drift Monitoring"]
+tab_overview, tab_predict, tab_monitoring, tab_performance, tab_drift, tab_retrain = st.tabs(
+    ["Overview", "Live Prediction", "Prediction Monitoring", "Model Performance", "Drift Monitoring", "Retraining History"]
 )
 
 # ---------------------------------------------------------------------------
@@ -102,6 +102,26 @@ with tab_overview:
         col3.metric("ROC-AUC", f"{metadata.get('roc_auc', 0):.4f}")
         training_date = metadata.get("training_date", "N/A")
         col4.metric("Last Trained", training_date.split("T")[0] if "T" in str(training_date) else training_date)
+
+with tab_retrain:
+    st.header("Retraining History")
+    retrain_summary = load_json(Path("reports/retrain_summary.json"))
+
+    if retrain_summary is None:
+        st.info("No retraining run has occurred yet. Run `python -m src.retrain` to generate one.")
+    else:
+        r1, r2, r3 = st.columns(3)
+        r1.metric("Last Run", retrain_summary.get("timestamp", "N/A").split("T")[0])
+        r2.metric("Drift Detected", "Yes" if retrain_summary.get("drift_detected") else "No")
+        r3.metric("Promoted", "Yes" if retrain_summary.get("promoted") else "No")
+
+        if retrain_summary.get("retraining_triggered"):
+            c1, c2 = st.columns(2)
+            c1.metric("Current Model ROC-AUC", f"{retrain_summary.get('current_roc_auc', 0):.4f}")
+            c2.metric("Candidate ROC-AUC", f"{retrain_summary.get('candidate_roc_auc', 0):.4f}")
+            st.caption(f"Candidate model: {retrain_summary.get('candidate_model_name', 'N/A')}")
+
+        st.caption(f"Reason: {retrain_summary.get('reason', 'N/A')}")
 
 # ---------------------------------------------------------------------------
 # Live Prediction
