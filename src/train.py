@@ -14,7 +14,7 @@ import joblib
 import mlflow
 import mlflow.sklearn
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
@@ -42,8 +42,6 @@ METRICS_PATH = MODELS_DIR / "metrics.json"
 RANDOM_STATE = 42
 EXPERIMENT_NAME = "Loan_Default_Risk_Prediction"
 
-# Hyperparameters defined explicitly here (not buried in Pipeline calls)
-# so they can be logged to MLflow cleanly.
 MODEL_HYPERPARAMS = {
     "logistic_regression": {
         "max_iter": 1000,
@@ -56,6 +54,12 @@ MODEL_HYPERPARAMS = {
         "class_weight": "balanced",
         "random_state": RANDOM_STATE,
         "n_jobs": -1,
+    },
+    "gradient_boosting": {
+        "n_estimators": 100,
+        "max_depth": 3,
+        "learning_rate": 0.1,
+        "random_state": RANDOM_STATE,
     },
 }
 
@@ -77,7 +81,13 @@ def load_processed_data():
 
 
 def build_candidate_models() -> dict:
-    """Define candidate models as sklearn Pipelines (scaler + classifier)."""
+    """
+    Define candidate models as sklearn Pipelines (scaler + classifier).
+    Three candidates: Logistic Regression, Random Forest, Gradient Boosting.
+    Note: GradientBoostingClassifier has no class_weight parameter, so class
+    imbalance is handled via the model's natural boosting behavior rather
+    than reweighting here.
+    """
     candidates = {
         "logistic_regression": Pipeline([
             ("scaler", StandardScaler()),
@@ -86,6 +96,10 @@ def build_candidate_models() -> dict:
         "random_forest": Pipeline([
             ("scaler", StandardScaler()),
             ("clf", RandomForestClassifier(**MODEL_HYPERPARAMS["random_forest"])),
+        ]),
+        "gradient_boosting": Pipeline([
+            ("scaler", StandardScaler()),
+            ("clf", GradientBoostingClassifier(**MODEL_HYPERPARAMS["gradient_boosting"])),
         ]),
     }
     return candidates
@@ -120,7 +134,6 @@ def train_and_evaluate_all(X_train, X_test, y_train, y_test, extra_tags: dict = 
         logger.info("Training model: %s", name)
 
         with mlflow.start_run(run_name=name):
-
             tags = {
                 "project": "loan-default-mlops",
                 "dataset": "UCI Default of Credit Card Clients",

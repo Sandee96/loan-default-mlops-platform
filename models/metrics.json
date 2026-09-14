@@ -1,5 +1,5 @@
 {
-  "best_model": "random_forest",
+  "best_model": "gradient_boosting",
   "models": {
     "logistic_regression": {
       "accuracy": 0.7246787919239113,
@@ -14,6 +14,13 @@
       "recall": 0.5761689291101055,
       "f1": 0.5359522974394949,
       "roc_auc": 0.7734679423350821
+    },
+    "gradient_boosting": {
+      "accuracy": 0.8177874186550976,
+      "precision": 0.6657223796033994,
+      "recall": 0.35444947209653094,
+      "f1": 0.4625984251968504,
+      "roc_auc": 0.7773526034501091
     }
   }
 }
