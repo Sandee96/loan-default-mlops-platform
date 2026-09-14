@@ -175,9 +175,11 @@ Every push and pull request to `main` triggers the test suite via GitHub Actions
 
 ## Deployment
 
-Deployed via an ngrok tunnel exposing the local Docker container over a public HTTPS URL. See
-[`docs/technical_documentation.md`](docs/technical_documentation.md) for the full explanation and
-context behind this choice.
+Deployed via an ngrok tunnel exposing the local Docker container over a public HTTPS URL. Cloud
+deployment (Render, Koyeb, Railway, Google Cloud Run) was evaluated during development; each required
+credit card verification or had no available free credit, so a persistent cloud deployment was not
+achieved within this project's timeframe. See
+[`docs/technical_documentation.md`](docs/technical_documentation.md) for full details.
 
 ## Results
 
