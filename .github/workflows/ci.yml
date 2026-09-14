@@ -10,6 +10,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: Build Docker image
+        run: docker build -t loan-default-api .
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:

@@ -16,6 +16,39 @@ This project implements a complete, end-to-end MLOps lifecycle for a credit defa
 - **CI/CD** via GitHub Actions (automated testing on every push/PR)
 - **A monitoring dashboard** built with Streamlit
 
+## Requirement Mapping
+
+| Assignment Requirement | Implementation |
+|---|---|
+| Real-time predictions | FastAPI `/predict` endpoint |
+| Automated model retraining | Drift-triggered retraining with ROC-AUC-gated promotion (`src/retrain.py`) |
+| Continuous integration | GitHub Actions: automated testing + Docker build validation on every push/PR |
+| Public deployment | Docker container exposed via ngrok tunnel |
+| Experiment tracking | MLflow |
+| Data drift monitoring | Evidently |
+| CI/CD integration | GitHub Actions workflows (`ci.yml`, `retrain.yml`) |
+| Monitoring dashboard | Streamlit |
+
+*Note: with an ngrok-based deployment, this project delivers automated **CI** (testing + Docker
+validation) rather than fully automatic **continuous deployment** — deploying a new build still
+requires manually restarting the container/tunnel. This is documented transparently rather than
+overstated.*
+
+## System Workflow
+Data → Preprocessing → Feature Engineering → Training → MLflow
+→ Best Model → FastAPI → Predictions → Prediction Logs
+→ Evidently Drift Detection → Retraining → Model Promotion (if candidate ≥ current)
+
+
+## Prototype Limitations
+
+| Limitation | Production Solution |
+|---|---|
+| Local file storage (MLflow, logs) | Persistent database / hosted MLflow server |
+| ngrok tunnel (manual, non-persistent) | Managed cloud hosting service |
+| Simulated/reused labels for retraining | Real labelled outcomes collected over time |
+
+
 ## Business Problem
 
 Lenders need to assess credit default risk before extending or renewing credit, at a scale that
